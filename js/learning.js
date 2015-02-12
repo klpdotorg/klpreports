@@ -35,28 +35,85 @@ function logslider(position) {
 function initialise(data)
 {
   info = data;
+  consttype=info["const_type"];
   translations = info['transdict'];
+  translations['H40']=translations['H126'];
+  if(consttype == 'block'){
+     info["const_type"]='BLOCK';
+     translations['H40']=translations['H124'];
+     document.getElementById('preschl').style.display='none';
+  }
+  else if(consttype == 'cluster'){
+     info["const_type"]='CLUSTER';
+     translations['H40']=translations['H125'];
+     document.getElementById('preschl').style.display='none';
+  }
+  else if(consttype == 'district'){
+     info["const_type"]='DISTRICT';
+     translations['H40']=translations['H123'];
+     document.getElementById('preschl').style.display='none';
+  }
+  consttype=info["const_type"];
   now = new Date()
   document.getElementById("reportdate").innerHTML = now.toDateString();
   document.getElementById("rephead").innerHTML = "<img src=\'/images/KLP_logo2.png\' width='130px' vertical-align='top' border=0 />" + '<br/>' + translations['H56'];
 
   document.getElementById("constname").innerHTML = translations[info["const_type"]] + " <img src=\'/images/arrow.gif\' width='8px' vertical-align='center' border='0'/>" + "<br/><h1>"  
                                                + info['const_name'] + "</h1>";
-  document.getElementById("constinfo").innerHTML =  "<dl class='header-def'><dt>" + translations['H8'] + "</dt><dd>"
+  constinfo = "<dl class='header-def'><dt>";
+  if(consttype=='MP Constituency' || consttype=='MLA Constituency' || consttype=='Ward'){
+    constinfo = constinfo + "<dt>" + translations['H8'] + "</dt><dd>" + info["const_code"] + "</dd>"
+                                                 + "<dt>" + translations['H9'] + "</dt><dd>" + info["const_rep"] + "</dd>"
+                                                + "<dt>" + translations['H10'] + "</dt><dd>" + info["const_party"] + "</dd>";
+    instcounts = '<dl class=\'header-def\'>'
+                           + '<dt style="font-size:9pt">' + translations['H11'] + '</dt>'
+                           + '<dd>' + info["inst_counts"]["abs_schcount"] + '</dd>'
+                           + '<dt style="font-size:9pt">' + translations['H12'] + '</dt>'
+                           + '<dd>' + info["inst_counts"]["abs_preschcount"] + '</dd>'
+                           + '</dl>';
+  }
+  else if(consttype=='BLOCK' || consttype=='PROJECT'){
+    constinfo =constinfo  + "<dt>" + translations["DISTRICT"] + "</dt><dd>" + info["const_rep"] + "</dd>";
+    instcounts = '<dl class=\'header-def\'>'
+                           + '<dt style="font-size:9pt">' + translations['H11'] + '</dt>'
+                           + '<dd>' + info["inst_counts"]["abs_schcount"] + '</dd>'
+                           + '</dl>';
+  }
+  else if(consttype=='CLUSTER' || consttype=='CIRCLE'){
+    constinfo = constinfo + "<dt>" + translations["DISTRICT"] + "</dt><dd>" + info["const_rep"] + "</dd>"
+                                                + "<dt>" + translations["BLOCK"] + "</dt><dd>" + info["const_party"] + "</dd>";
+    instcounts = '<dl class=\'header-def\'>'
+                           + '<dt style="font-size:9pt">' + translations['H11'] + '</dt>'
+                           + '<dd>' + info["inst_counts"]["abs_schcount"] + '</dd>'
+                           + '</dl>';
+
+  }
+  if(consttype=='DISTRICT'){
+     constinfo='';
+     instcounts = '<dl class=\'header-def\'>'
+                           + '<dt style="font-size:9pt">' + translations['H11'] + '</dt>'
+                           + '<dd>' + info["inst_counts"]["abs_schcount"] + '</dd>'
+                           + '</dl>';
+
+  }
+  else
+     constinfo=constinfo + "</dl>";
+  document.getElementById("constinfo").innerHTML = constinfo;
+/*  document.getElementById("constinfo").innerHTML =  "<dl class='header-def'><dt>" + translations['H8'] + "</dt><dd>"
                            + info["const_code"] + "</dd>"
                            + "<dt>" + translations['H9'] + "</dt><dd>" + info["const_rep"] + "</dd>"
                            + "<dt>" + translations['H10'] + "</dt><dd>" + info["const_party"] + "</dd>" 
-			   + "</dl>";
+			   + "</dl>";*/
   document.getElementById("hiddenip").innerHTML = '<input type="hidden" name="const_type" value="'+ info["constype"] + '" />' +
   '<input type="hidden" name="const_id" value="'+ info["const_id"] + '" />' +
   '<input type="hidden" name="forreport" value="'+ info["forreport"] + '" />' +
   '<input type="hidden" name="rep_lang" value="'+ info["rep_lang"] + '" />' ;
-  document.getElementById('instcounts').innerHTML = '<dl class=\'header-def\'>' 
+  document.getElementById('instcounts').innerHTML = instcounts; /*'<dl class=\'header-def\'>' 
 			   + '<dt style="font-size:9pt">' + translations['H11'] + '</dt>'
                            + '<dd>' + info["inst_counts"]["abs_schcount"] + '</dd>'
 			   + '<dt style="font-size:9pt">' + translations['H12'] + '</dt>'
                            + '<dd>' + info["inst_counts"]["abs_preschcount"] + '</dd>'
-                           + '</dl>'
+                           + '</dl>';*/
   if(parseInt(info["lib_count"]) != 0){
   
     document.getElementById("learninghead").innerHTML = translations['H113'];

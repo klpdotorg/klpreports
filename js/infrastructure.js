@@ -24,12 +24,37 @@ function isEmpty(ob){
 return true;
 }
 
+function clear_preschl(){
+  document.getElementById('preschl').style.display = 'none';
+  document.getElementById('tb_preschl').style.display = 'none';
+  document.getElementById('nei_preschl').style.display = 'none';
+  document.getElementById('tb_schl').style.display = 'block';
+  document.getElementById('schl').style.display = 'block';
+}
     
 function initialise(data)
 {
-
-info = data;
-translations = info['transdict'];
+  info = data;
+  consttype = info["const_type"];
+  translations = info['transdict'];
+  translations['H40']=translations['H126'];
+  if(consttype == 'block'){
+     info["const_type"]='BLOCK';
+     translations['H40']=translations['H124'];
+     clear_preschl();
+  }
+  else if(consttype == 'cluster'){
+     info["const_type"]='CLUSTER';
+     translations['H40']=translations['H125'];
+     clear_preschl();
+  }
+  else if(consttype == 'district'){
+     info["const_type"]='DISTRICT';
+     translations['H40']=translations['H123'];
+     clear_preschl();
+  }
+  consttype = info["const_type"];
+average = 'Bangalore Avg';
 now = new Date()
 document.getElementById("reportdate").innerHTML = now.toDateString();
 document.getElementById("rephead").innerHTML = "<img src=\'/images/KLP_logo2.png\' width='130px' vertical-align='top' border=0 />" + '<br/>' + translations['H56'];
@@ -41,16 +66,41 @@ document.getElementById("neighhead").innerHTML = translations['H40'];
 
 document.getElementById("constname").innerHTML = translations[info["const_type"]] + " <img src=\'/images/arrow.gif\' width='8px' vertical-align='center' border='0'/>" + "<br/><h1>"  
                                                + info['const_name'] + "</h1>";
-document.getElementById("constinfo").innerHTML =  "<dl class='header-def'><dt>" + translations['H8'] + "</dt><dd>" + info["const_code"] + "</dd>"
+constinfo = "<dl class='header-def'><dt>";
+  if(consttype=='MP Constituency' || consttype=='MLA Constituency' || consttype=='Ward'){
+    constinfo = constinfo + "<dt>" + translations['H8'] + "</dt><dd>" + info["const_code"] + "</dd>"
+                                                 + "<dt>" + translations['H9'] + "</dt><dd>" + info["const_rep"] + "</dd>"
+                                                + "<dt>" + translations['H10'] + "</dt><dd>" + info["const_party"] + "</dd>";
+    instcounts='<dl class=\'header-def\'><dt>' + translations['H11'] + '</dt><dd>' + info["inst_counts"]["abs_schcount"] + '</dd>'
+                                     + '<dt>' + translations['H12'] + '</dt><dd>' + info["inst_counts"]["abs_preschcount"] + '</dd></dl>';
+  }
+  else if(consttype=='BLOCK' || consttype=='PROJECT'){
+    constinfo =constinfo  + "<dt>" + translations["DISTRICT"] + "</dt><dd>" + info["const_rep"] + "</dd>";
+    instcounts='<dl class=\'header-def\'><dt>' + translations['H11'] + '</dt><dd>' + info["inst_counts"]["abs_schcount"] + '</dd></dl>';
+    average=info["const_rep"][0].toUpperCase()+info["const_rep"].substr(1).toLowerCase()+' Avg';
+  }
+  else if(consttype=='CLUSTER' || consttype=='CIRCLE'){
+    constinfo = constinfo + "<dt>" + translations["DISTRICT"] + "</dt><dd>" + info["const_rep"] + "</dd>"
+                                                + "<dt>" + translations["BLOCK"] + "</dt><dd>" + info["const_party"] + "</dd>";
+    instcounts='<dl class=\'header-def\'><dt>' + translations['H11'] + '</dt><dd>' + info["inst_counts"]["abs_schcount"] + '</dd></dl>';
+    average=info["const_party"][0].toUpperCase()+info["const_party"].substr(1).toLowerCase()+' Avg';
+  }
+  if(consttype=='DISTRICT'){
+     constinfo='';
+     instcounts='<dl class=\'header-def\'><dt>' + translations['H11'] + '</dt><dd>' + info["inst_counts"]["abs_schcount"] + '</dd></dl>';
+  }
+  else
+     constinfo=constinfo + "</dl>";
+document.getElementById("constinfo").innerHTML = constinfo;  /*"<dl class='header-def'><dt>" + translations['H8'] + "</dt><dd>" + info["const_code"] + "</dd>"
                                               + "<dt>" + translations['H9'] + "</dt><dd>" + info["const_rep"] + "</dd>"
                                               + "<dt>" + translations['H10'] + "</dt><dd>" + info["const_party"] + "</dd>"
-					      + "</dl>";
+					      + "</dl>";*/
 document.getElementById("hiddenip").innerHTML = '<input type="hidden" name="const_type" value="'+ info["constype"] + '" />' +
         '<input type="hidden" name="const_id" value="'+ info["const_id"] + '" />' +
         '<input type="hidden" name="forreport" value="'+ info["forreport"] + '" />' +
         '<input type="hidden" name="rep_lang" value="'+ info["rep_lang"] + '" />' ;
-document.getElementById('instcounts').innerHTML = '<dl class=\'header-def\'><dt style="font-size:9pt">' + translations['H11'] + '</dt><dd>' + info["inst_counts"]["abs_schcount"] + '<dt style="font-size:9pt">' + translations['H12'] + '</dt><dd>' + info["inst_counts"]["abs_preschcount"] +'</dd></dl>';
-
+document.getElementById('instcounts').innerHTML = instcounts; /*'<dl class=\'header-def\'><dt style="font-size:9pt">' + translations['H11'] + '</dt><dd>' + info["inst_counts"]["abs_schcount"] + '<dt style="font-size:9pt">' + translations['H12'] + '</dt><dd>' + info["inst_counts"]["abs_preschcount"] +'</dd></dl>';
+*/
 if(parseInt(info["inst_counts"]["abs_schcount"]) != 0){
 
   ang_infra_table();
@@ -59,7 +109,6 @@ if(parseInt(info["inst_counts"]["abs_schcount"]) != 0){
   //lib_summary_chart();
   neighbours_anginfra();
   neighbours_dise();
-  
   document.getElementById('intro_txt').innerHTML = (info['intro_txt'] == 'undefined') ? translations['H60'] : info['intro_txt'];
   document.getElementById('ang_infra_txt').innerHTML = (info['ang_infra_txt'] == 'undefined') ? translations['H60'] : info['ang_infra_txt'];
   document.getElementById('dise_facility_txt').innerHTML = (info['dise_facility_txt'] == 'undefined') ? translations['H60'] : info['dise_facility_txt'];
@@ -78,9 +127,15 @@ function neighbours_anginfra() {
      document.getElementById('ai_comparison').innerHTML = translations['H60'];
  } else {
    var vals = [];
-   var tabletxt = ''
-   var rows = Object.keys(info["neighbours_anginfra"]);
-   var cols_ai = Object.keys(info["neighbours_anginfra"][rows[0]]);
+   var tabletxt = '';
+   //alert(info["const_type"]);
+   if(info["const_type"] == 'DISTRICT' || info["const_type"] == 'BLOCK' || info["const_type"] == 'CLUSTER'){
+      var rows = '';
+      var cols_ai = '';
+   } else {
+      var rows = Object.keys(info["neighbours_anginfra"]);
+      var cols_ai = Object.keys(info["neighbours_anginfra"][rows[0]]);
+   }
    var rows_di = Object.keys(info["neighbours_dise"]);
    var cols_di = Object.keys(info["neighbours_dise"][rows_di[0]]);
    var cols = [];
@@ -214,6 +269,9 @@ function ang_infra_table() {
 
 function dise_facility_table() {
       var df_tb_str = '';
+      var df_tb_str_left = '';
+      var df_tb_str_right = '';
+      var flag = 0;
       var df_dict = null;
       for (var key in info["dise_facility"]){
         df_tb_str = df_tb_str + '<span style="font-weight:bold;font-size:12pt">'+ translations[key] + '</br></span><dl class="icon-def">';
@@ -222,9 +280,32 @@ function dise_facility_table() {
           disp_arr = each.split(';');
           df_tb_str = df_tb_str +  '<dt>' + disp_arr[0] + '</dt><dd>' + disp_arr[1] + '</br>' + ConvertToIndian(df_dict[each],true) + '</dd>'
         }
-        df_tb_str = '</dl>' + df_tb_str + '</br>'
+        df_tb_str = '</dl>' + df_tb_str + '</br>';
       }
-      document.getElementById('dise_facility_tb').innerHTML = df_tb_str;
+     if(info["const_type"] == 'DISTRICT' || info["const_type"] == 'BLOCK' || info["const_type"] == 'CLUSTER')
+      for (var key in info["dise_facility"]){
+        if(translations[key] == 'Learning Environment')
+            flag = flag+1;
+        if(translations[key] == 'Toilet Facilities')
+	    flag = 0;
+        df_tb_str = '<span style="font-weight:bold;font-size:12pt">'+ translations[key] + '</br></span><dl class="icon-def">';
+        df_dict = info["dise_facility"][key]
+        for (var each in df_dict){
+          disp_arr = each.split(';');
+          df_tb_str = df_tb_str +  '<dt>' + disp_arr[0] + '</dt><dd>' + disp_arr[1] + '</br>' + ConvertToIndian(df_dict[each],true) + '</dd>'
+        }
+        df_tb_str = '</dl>' + df_tb_str + '</br>';
+        if(flag == 0){ 
+          df_tb_str_left = df_tb_str_left + df_tb_str;
+        } else {
+          df_tb_str_right = df_tb_str_right + df_tb_str;
+        }
+      }
+     if(info["const_type"] == 'DISTRICT' || info["const_type"] == 'BLOCK' || info["const_type"] == 'CLUSTER'){
+       document.getElementById('dise_facility_tb_left').innerHTML = df_tb_str_left;
+       document.getElementById('dise_facility_tb_right').innerHTML = df_tb_str_right;
+     } else
+        document.getElementById('dise_facility_tb').innerHTML = df_tb_str;
 }
 
 function lib_status_chart() {
@@ -295,7 +376,7 @@ function ConvertToIndian(inputString,colour_code) {
       if (!isNaN(suf)) outputString += '.' + suf; 
       if(colour_code) {
         outputString = cc_str + outputString + '</span>%' 
-        outputString = outputString + '<span style="font-size:8pt">&nbsp;&nbsp;&nbsp;' + translations['Bangalore Avg'] + ': ' + bm + '%</span></span>';
+        outputString = outputString + '<span style="font-size:8pt">&nbsp;&nbsp;&nbsp;' + average + ': ' + bm + '%</span></span>';
         return outputString; 
       } else {
         return outputString; 

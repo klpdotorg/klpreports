@@ -47,6 +47,12 @@ class CommonUtil:
         constype = "mla"
       elif cons_type == 3:
         constype = "corporator"
+      elif cons_type == 4:
+        constype = "district"
+      elif cons_type == 5:
+        constype = "block"
+      elif cons_type == 6:
+        constype = "cluster"
       data = {}
       tabledata = {}
       for querykey in qkeys:

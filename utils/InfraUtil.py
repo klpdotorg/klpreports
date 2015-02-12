@@ -3,7 +3,7 @@ import traceback
 
 import sys, os,traceback
 
-def getInfraText(data,lang):
+def getInfraText(data,lang,constype):
 
     transDict = {}
     f = open(os.path.join(os.getcwd(),'translations/infra_translations_text.csv'),'r')
@@ -13,6 +13,15 @@ def getInfraText(data,lang):
         transDict[str(text[0])] = text[1]
       else:
         transDict[str(text[0])] = text[2]
+    if constype == 4:
+       transDict['1']=transDict['22']
+       transDict['19']=transDict['28']
+    elif constype == 5:
+       transDict['1']=transDict['23']
+       transDict['19']=transDict['29']
+    elif constype == 6:
+       transDict['1']=transDict['24']
+       transDict['19']=transDict['30']
     intro_txt_str=transDict['1'] 
     ang_infra_txt_str=transDict['17']
     dise_facility_txt_str=transDict['17']
@@ -95,7 +104,10 @@ def getInfraText(data,lang):
       
       neighbours = data["neighbours_dise"][data["neighbours_dise"].keys()[0]].keys()
       if neighbours:
-        neighbours.remove(data['const_name'])
+        try:
+            neighbours.remove(data['const_name'].upper())
+        except:
+            neighbours.remove(data['const_name'].lower())
         neighbours_txt_str = '<br/>' + str(data['const_name']) + ' ' + transDict['19'] + ', '.join([str(x) for x in neighbours]) + '. ' + transDict['20']
     data['neighbours_txt'] = neighbours_txt_str 
     return data

@@ -3,7 +3,7 @@ import traceback
 
 import sys, os,traceback
 
-def getLibText(data,lang):
+def getLibText(data,lang,constype):
 
     transDict = {}
     f = open(os.path.join(os.getcwd(),'translations/lib_translations_text.csv'),'r')
@@ -60,7 +60,10 @@ def getLibText(data,lang):
 #---------------------- Neighbours
     neighbours = data["neighbours_lib"].keys()
     if neighbours:
-      neighbours.remove(data['const_name'])
+      try:
+          neighbours.remove(data['const_name'].upper())
+      except:
+          neighbours.remove(data['const_name'].lower())
       neighbourslib_txt = '<br/>' + str(data['const_name']) + ' ' + transDict['9'] + ', '.join([str(x) for x in neighbours]) + '. ' + transDict['7']
       data['libneighbours_txt'] = neighbourslib_txt 
     return data

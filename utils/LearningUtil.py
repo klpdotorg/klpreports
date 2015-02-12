@@ -3,7 +3,7 @@ import traceback
 
 import sys, os,traceback
 
-def getLearningText(data,lang):
+def getLearningText(data,lang,constype):
 
     transDict = {}
     f = open(os.path.join(os.getcwd(),'translations/learn_translations_text.csv'),'r')

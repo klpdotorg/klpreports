@@ -21,17 +21,50 @@ function initialise(data)
 {
   info = data;
   translations = info['transdict'];
+  consttype=info["const_type"];
+  if(consttype == 'block'){
+     info["const_type"]='BLOCK';
+     translations['H40']=translations['H124'];
+  }
+  else if(consttype == 'cluster'){
+     info["const_type"]='CLUSTER';
+     translations['H40']=translations['H125'];
+  }
+  else if(consttype == 'district'){
+     info["const_type"]='DISTRICT';
+     translations['H40']=translations['H123'];
+  }
+  consttype=info["const_type"];
   now = new Date()
   document.getElementById("reportdate").innerHTML = now.toDateString();
   document.getElementById("rephead").innerHTML = "<img src=\'/images/" + info["logo_link"] + "\' width='300px' vertical-align='bottom' border=0 />";
 
   document.getElementById("constname").innerHTML = translations[info["const_type"]] + " <img src=\'/images/af_arrow.gif\' width='8px' vertical-align='center' border='0'/>" + "<br/><h1>"  
                                                + info['const_name'] + "</h1>";
-  document.getElementById("constinfo").innerHTML =  "<dl class='header-def'><dt>" + translations['H8'] + "</dt><dd>"
+  constinfo = "<dl class='header-def'><dt>";
+  if(consttype=='MP Constituency' || consttype=='MLA Constituency' || consttype=='Ward'){
+    constinfo = constinfo + "<dt>" + translations['H8'] + "</dt><dd>" + info["const_code"] + "</dd>"
+                                                 + "<dt>" + translations['H9'] + "</dt><dd>" + info["const_rep"] + "</dd>"
+                                                + "<dt>" + translations['H10'] + "</dt><dd>" + info["const_party"] + "</dd>";
+  }
+  else if(consttype=='BLOCK' || consttype=='PROJECT'){
+    constinfo =constinfo  + "<dt>" + translations["DISTRICT"] + "</dt><dd>" + info["const_rep"] + "</dd>";
+  }
+  else if(consttype=='CLUSTER' || consttype=='CIRCLE'){
+    constinfo = constinfo + "<dt>" + translations["DISTRICT"] + "</dt><dd>" + info["const_rep"] + "</dd>"
+                                                + "<dt>" + translations["BLOCK"] + "</dt><dd>" + info["const_party"] + "</dd>";
+  }
+  if(consttype=='DISTRICT'){
+     constinfo='';
+  }
+  else
+     constinfo=constinfo + "</dl>";
+  document.getElementById("constinfo").innerHTML = constinfo;
+/*  document.getElementById("constinfo").innerHTML =  "<dl class='header-def'><dt>" + translations['H8'] + "</dt><dd>"
                            + info["const_code"] + "</dd>"
                            + "<dt>" + translations['H9'] + "</dt><dd>" + info["const_rep"] + "</dd>"
                            + "<dt>" + translations['H10'] + "</dt><dd>" + info["const_party"] + "</dd>"
-			   + "</dl>";
+			   + "</dl>";*/
   document.getElementById("hiddenip").innerHTML = '<input type="hidden" name="const_type" value="'+ info["constype"] + '" />' +
   '<input type="hidden" name="const_id" value="'+ info["const_id"] + '" />' +
   '<input type="hidden" name="forreport" value="'+ info["forreport"] + '" />' +

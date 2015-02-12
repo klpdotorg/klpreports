@@ -25,6 +25,15 @@ class Finances:
     elif cons_type == 3:
       data["const_type"]='Corporator'
       constype = "corporator"
+    elif cons_type == 4:
+      data["const_type"]='District'
+      constype = "district"
+    elif cons_type == 5:
+      data["const_type"]='Block'
+      constype = "block"
+    elif cons_type == 6:
+      data["const_type"]='Cluster'
+      constype = "cluster"
     data["const_name"]=str(constid[0])
     data.update(self.constituencyData(constype,constid))
     data.update(self.getTLMGrant(constype,constid))
@@ -37,6 +46,7 @@ class Finances:
     tabledata = {}
     querykey = 'tlmgrant_sch' 
     result = cursor.query(db.Queries.getDictionary(constype)[constype + '_' + querykey],{'s':constid})
+    #print result
     for row in result:
       tabledata['grant_amount'] = str(row.total_grant)
       tabledata['teacher_count'] = str(int(row.total_grant)/int(row.grant_amount))

@@ -21,5 +21,16 @@ def getWebDbConnection():
   username = config.get('Database','user')
   passwd = config.get('Database','passwd')
   dbtype='postgres'
-  connection = web.database(dbn=dbtype,user=username,pw=passwd,db=dbname)
+  connection = web.database(dbn=dbtype,user=username,pw=passwd.strip('\''),db=dbname)
+  return connection
+
+def getWebDbConnection1():
+  config = SafeConfigParser()
+  config.read(os.path.join(os.getcwd(),'config/klpconfig.ini'))
+  dbname = config.get('Database1','dbname')
+  username = config.get('Database1','user')
+  passwd = config.get('Database1','passwd')
+  dbtype='postgres'
+  print "dbn="+dbtype+",user="+username+",pw="+passwd+",db="+dbname
+  connection = web.database(dbn=dbtype,user=username,pw=passwd.strip('\''),db=dbname)
   return connection

@@ -3,7 +3,7 @@ import traceback
 
 import sys, os,traceback
 
-def getDemographicsText(data,lang):
+def getDemographicsText(data,lang,constype):
     transDict = {}
     f = open(os.path.join(os.getcwd(),'translations/translations_text.csv'),'r')
     for line in f.readlines():
@@ -13,11 +13,23 @@ def getDemographicsText(data,lang):
       else:
         transDict[str(text[0])] = text[2]
     #print transDict
+    if constype == 4:
+       transDict['1']=transDict['33']
+       transDict['2']=transDict['30']
+       transDict['19']=transDict['36']
+    elif constype == 5:
+       transDict['1']=transDict['34']
+       transDict['2']=transDict['31']
+       transDict['19']=transDict['37']
+    elif constype == 6:
+       transDict['1']=transDict['35']
+       transDict['2']=transDict['32']
+       transDict['19']=transDict['38']
     sch_txt_str=transDict['1'] + transDict['2'] #+ transDict['3']
     presch_txt_str=transDict['2']
     enrol_txt_str= ''
     lang_txt_str = transDict['2']
-    neighbours_txt_str ='<br/><br/>' + transDict['29']
+    neighbours_txt_str ='<br/><br/>' + transDict['29']    
     
     #School Text
     if int(data["inst_counts"]["schcount"]) > 0:
@@ -43,7 +55,8 @@ def getDemographicsText(data,lang):
       
     #Preschool Text
     if int(data["inst_counts"]["preschcount"]) > 0:
-      presch_txt_str = presch_txt_str + data["inst_counts"]["preschcount"] + ' ' + transDict['9'] + str(data['gend_presch_tb']['Boy']) + transDict['4'] + str(data['gend_presch_tb']['Girl']) + transDict['5']
+      if constype not in [4,5,6]:
+          presch_txt_str = presch_txt_str + data["inst_counts"]["preschcount"] + ' ' + transDict['9'] + str(data['gend_presch_tb']['Boy']) + transDict['4'] + str(data['gend_presch_tb']['Girl']) + transDict['5']
       data['presch_txt'] = presch_txt_str
       
       enrol_txt_str = enrol_txt_str + transDict['22'] + str(data["inst_counts"]["preschcount"]) + transDict['26'] + str(data['gend_presch_tb']['Boy'] + data['gend_presch_tb']['Girl']) + transDict['25'] + transDict['12']
@@ -63,7 +76,10 @@ def getDemographicsText(data,lang):
       if len(data['neighbours_presch'].keys()) > len(data['neighbours_sch'].keys()):
         choice = 'neighbours_presch'
       neighbours = data[choice].keys()
-      neighbours.remove(data['const_name'])
+      try:
+          neighbours.remove(data['const_name'].upper())
+      except:
+          neighbours.remove(data['const_name'].lower())
       neighbours_txt_str = '<br/><br/>' + str(data['const_name']) + ' ' + transDict['19'] + ', '.join([str(x) for x in neighbours]) + '. ' + transDict['20']
     data['neighbours_txt'] = neighbours_txt_str + transDict['21'] + transDict['27']
     return data

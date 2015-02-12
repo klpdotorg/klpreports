@@ -12,13 +12,9 @@ from utils.CommonUtil import CommonUtil
 cursor = db.KLPDB.getWebDbConnection()
 
 class Infrastructure:
-
   def generateData(self,cons_type, constid):
     data = {}
     avgdata = {}
-    avgdata = self.getAverages()
-
-    constype = "mp"
     if cons_type == 1:
       data["const_type"]='MP'
       constype = "mp"
@@ -28,38 +24,61 @@ class Infrastructure:
     elif cons_type == 3:
       data["const_type"]='Corporator'
       constype = "corporator"
+    elif cons_type == 4:
+      data["const_type"]='District'
+      constype = "district"
+    elif cons_type == 5:
+      data["const_type"]='Block'
+      constype = "block"
+    elif cons_type == 6:
+      data["const_type"]='Cluster'
+      constype = "cluster"
     data["const_name"]=str(constid[0])
-
+    avgdata = self.getAverages(constype,constid)
     data.update(self.constituencyData(constype,constid))
     data.update(self.getAngInfra(constype,constid,avgdata))
     data.update(self.getSchoolInfra(constype,constid,avgdata))
     return data
 
-  def getAverages(self):
+  def getAverages(self,constype,constid):
     data = {}
-    querykeys = ['get_dise_count_blore','get_sch_count_blore','get_ai_count_blore','get_ang_count_blore']
+    if constype not in ['district','block','cluster']:
+        querykeys = ['get_dise_count_blore','get_sch_count_blore','get_ai_count_blore','get_ang_count_blore']
+        query_head='common_queries'
+    else:
+        querykeys = ['get_dise_count_parent','get_sch_count_parent']
+        query_head = constype
+    #print query_head
     for key in querykeys:
-      result = cursor.query(db.Queries.getDictionary("common_queries")[key])
+      result = cursor.query(db.Queries.getDictionary(query_head)[key],{'s':constid})
       for row in result:
         data[key.replace("get_","")] = row.count
-    querykeys = ['get_dise_avg_blore','get_ai_avg_blore']
+    if constype not in ['district','block','cluster']:
+        querykeys = ['get_dise_avg_blore','get_ai_avg_blore']
+        parent = 'blore'
+    else:
+        querykeys = ['get_dise_avg_parent']
+        parent = 'parent'
     for key in querykeys:
       tabledata = {}
-      result = cursor.query(db.Queries.getDictionary("common_queries")[key])
+      result = cursor.query(db.Queries.getDictionary(query_head)[key],{'s':constid})
       for row in result:
         if 'dise' in key:
-          tabledata[row.a1] = str(int(row.count) * 100/int(data['dise_count_blore']))
+          tabledata[row.a1] = str(int(row.count) * 100/int(data['dise_count_'+parent]))
         else:
-          tabledata[row.a1] = str(int(row.count) * 100/int(data['ai_count_blore']))
+          if parent == 'blore':
+              tabledata[row.a1] = str(int(row.count) * 100/int(data['ai_count_blore']))
       data[key.replace("get_","")] = tabledata
     return data
 
   def getAngInfra(self,constype,constid,data):
     tabledata = {}
-    
-    blore_count = data['ai_count_blore']
-    blore_infra = data['ai_avg_blore']
-
+    if constype not in ['district','block','cluster']:
+        blore_count = data['ai_count_blore']
+        blore_infra = data['ai_avg_blore']
+    else:
+        blore_count = data['dise_count_parent']
+        blore_infra = data['dise_avg_parent']
     querykey = 'infra_count'
     result = cursor.query(db.Queries.getDictionary(constype)[constype + '_' + querykey],{'s':constid})
     for row in result:
@@ -81,10 +100,12 @@ class Infrastructure:
 
   def getSchoolInfra(self,constype,constid,data):
     tabledata = {}
-
-    blore_count = data['dise_count_blore']
-    blore_dise = data['dise_avg_blore']
-
+    if constype not in ['district','block','cluster']:
+        blore_count = data['dise_count_blore']
+        blore_dise = data['dise_avg_blore']
+    else:
+        blore_count = data['dise_count_parent']
+        blore_dise = data['dise_avg_parent']
     querykey = 'dise_count'
     result = cursor.query(db.Queries.getDictionary(constype)[constype + '_' + querykey],{'s':constid})
     for row in result:

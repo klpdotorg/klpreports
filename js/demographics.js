@@ -19,11 +19,35 @@ function roundNumber(rnum, rlength) { // Arguments: number to round, number of d
   return parseFloat(newnumber); // Output the result to the form field (change for your purposes)
 }
 
+function clear_preschl(){
+    document.getElementById('preschl').style.display='none';
+    document.getElementById('gendpreschl').style.display='none';
+    document.getElementById('neipreschl').style.display='none';
+}
       
 function initialise(data)
 {
 
   info = data;
+  consttype=info["const_type"];
+  translations = info['transdict'];
+  translations['H40']=translations['H126'];
+  if(consttype == 'block'){
+     info["const_type"]='BLOCK';
+     translations['H40']=translations['H124'];
+     clear_preschl();
+  }
+  else if(consttype == 'cluster'){
+     info["const_type"]='CLUSTER';
+     translations['H40']=translations['H125'];
+     clear_preschl();
+  }
+  else if(consttype == 'district'){
+     info["const_type"]='DISTRICT';
+     translations['H40']=translations['H123'];
+     clear_preschl();
+  }
+  consttype=info["const_type"];
   translations = info['transdict']
   now = new Date()
   document.getElementById("reportdate").innerHTML = now.toDateString();
@@ -34,19 +58,42 @@ function initialise(data)
   document.getElementById("enrolhead").innerHTML = translations['H29'];
   document.getElementById("langhead").innerHTML = translations['H36'];
   document.getElementById("neighhead").innerHTML = translations['H40'];
-
   document.getElementById("constname").innerHTML = translations[info["const_type"]] + " <img src=\'/images/arrow.gif\' width='8px' vertical-align='center' border='0'/>" + "<br/><h1>"  
                                                  + info['const_name'] + "</h1>";
-  document.getElementById("constinfo").innerHTML =  "<dl class='header-def'><dt>" + translations['H8'] + "</dt><dd>" + info["const_code"] + "</dd>"
+  constinfo = "<dl class='header-def'><dt>";
+  if(consttype=='MP Constituency' || consttype=='MLA Constituency' || consttype=='Ward'){
+    constinfo = constinfo + "<dt>" + translations['H8'] + "</dt><dd>" + info["const_code"] + "</dd>"
+                                                 + "<dt>" + translations['H9'] + "</dt><dd>" + info["const_rep"] + "</dd>"
+                                                + "<dt>" + translations['H10'] + "</dt><dd>" + info["const_party"] + "</dd>";
+    instcounts='<dl class=\'header-def\'><dt>' + translations['H11'] + '</dt><dd>' + info["inst_counts"]["schcount"] + '</dd>'
+                                                  + '<dt>' + translations['H12'] + '</dt><dd>' + info["inst_counts"]["preschcount"] + '</dd></dl>';
+  }
+  else if(consttype=='BLOCK' || consttype=='PROJECT'){
+    constinfo =constinfo  + "<dt>" + translations["DISTRICT"] + "</dt><dd>" + info["const_rep"] + "</dd>";
+    instcounts='<dl class=\'header-def\'><dt>' + translations['H11'] + '</dt><dd>' + info["inst_counts"]["schcount"] + '</dd></dl>';
+                                                  + '</dl>';
+  }
+  else if(consttype=='CLUSTER' || consttype=='CIRCLE'){
+    constinfo = constinfo + "<dt>" + translations["DISTRICT"] + "</dt><dd>" + info["const_rep"] + "</dd>"
+                                                + "<dt>" + translations["BLOCK"] + "</dt><dd>" + info["const_party"] + "</dd>";
+    instcounts='<dl class=\'header-def\'><dt>' + translations['H11'] + '</dt><dd>' + info["inst_counts"]["schcount"] + '</dd></dl>';
+  }
+  if(consttype=='DISTRICT'){
+     constinfo='';
+     instcounts='<dl class=\'header-def\'><dt>' + translations['H11'] + '</dt><dd>' + info["inst_counts"]["schcount"] + '</dd></dl>';
+  }
+  else
+     constinfo=constinfo + "</dl>";
+  document.getElementById("constinfo").innerHTML = constinfo;/* "<dl class='header-def'><dt>" + translations['H8'] + "</dt><dd>" + info["const_code"] + "</dd>"
                                                 + "<dt>" + translations['H9'] + "</dt><dd>" + info["const_rep"] + "</dd>"
                                                 + "<dt>" + translations['H10'] + "</dt><dd>" + info["const_party"] + "</dd>" 
-                                                + "</dl>";
+                                                + "</dl>";*/
   document.getElementById("hiddenip").innerHTML = '<input type="hidden" name="const_type" value="'+ info["constype"] + '" />' +
           '<input type="hidden" name="const_id" value="'+ info["const_id"] + '" />' +
           '<input type="hidden" name="forreport" value="'+ info["forreport"] + '" />' +
           '<input type="hidden" name="rep_lang" value="'+ info["rep_lang"] + '" />' ;
-  document.getElementById('instcounts').innerHTML = '<dl class=\'header-def\'><dt>' + translations['H11'] + '</dt><dd>' + info["inst_counts"]["schcount"] + '</dd>'
-                                                  + '<dt>' + translations['H12'] + '</dt><dd>' + info["inst_counts"]["preschcount"] + '</dd></dl>';
+  document.getElementById('instcounts').innerHTML = instcounts;/*'<dl class=\'header-def\'><dt>' + translations['H11'] + '</dt><dd>' + info["inst_counts"]["schcount"] + '</dd>'
+                                                  + '<dt>' + translations['H12'] + '</dt><dd>' + info["inst_counts"]["preschcount"] + '</dd></dl>';*/
   if(parseInt(info["inst_counts"]["schcount"]) != 0){
     gend_sch_Chart();
     mt_sch_Chart();
